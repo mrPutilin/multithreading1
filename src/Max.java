@@ -1,32 +1,7 @@
 import java.util.*;
 import java.util.concurrent.*;
 
-public class Max implements Callable<String> {
-
-    @Override
-    public String call() throws Exception {
-
-        String[] texts = new String[25];
-        for (int i = 0; i < texts.length; i++) {
-            texts[i] = generateText("aab", 30_000);
-        }
-
-        for (String text : texts) {
-            int sizeA = 0;
-            int count = 0;
-            for (int i = 0; i < text.length(); i++) {
-                if (text.charAt(i) == 'a') {
-                    count++;
-                    if (count > sizeA)
-                        sizeA = count;
-                } else count = 0;
-            }
-            return text.substring(0, 100) + " -> " + sizeA;
-        }
-        return null;
-
-    }
-
+public class Max {
 
     public static void main(String[] args) throws Exception {
 
@@ -34,12 +9,28 @@ public class Max implements Callable<String> {
 
         List<Future<String>> futures = new ArrayList<>(25);
 
-        Callable<String> myCallable = new Max();
+        String[] texts = new String[25];
+        for (int i = 0; i < texts.length; i++) {
+            texts[i] = generateText("aab", 30_000);
+        }
 
         final ExecutorService threadPool = Executors.newFixedThreadPool(25);
 
-        for (int i = 0; i < 25; i++) {
-            Future<String> future = threadPool.submit(myCallable);
+        for (String text : texts) {
+            Future<String> future = threadPool.submit(() -> {
+                int sizeA = 0;
+                int count = 0;
+                for (int i = 0; i < text.length(); i++) {
+                    if (text.charAt(i) == 'a') {
+                        count++;
+                        if (count > sizeA)
+                            sizeA = count;
+                    } else count = 0;
+                }
+
+                return text.substring(0, 100) + " -> " + sizeA;
+            });
+
             futures.add(future);
         }
 
